@@ -2337,12 +2337,13 @@ static void uw_stage_render(void)
  * word, in order with the draws around it. */
 void nv2a_pb_stream_mark(uint32_t va, uint32_t tag);   /* toolkit nv2a_pb_state.h */
 int  nv2a_host_hdr(void);                               /* toolkit nv2a_backend_common.h */
+extern volatile int nvk_xr_scene_wanted;               /* toolkit nv2a_vk_core.h (Quest port) */
 static void hdr_mark(uint32_t tag)
 {
     uint32_t dev, put;
     /* graphics.hdr (live) or RECOMP_DEBUG=hdr: before, only the debug
      * switch marked, so the setting alone never gave the scene its light. */
-    if (!nv2a_host_hdr())
+    if (!nv2a_host_hdr() && !nvk_xr_scene_wanted)   /* or a headset's 3D (xr_theater.c) */
         return;
     dev = HD_M32(BO3_VA(0x35FB48, 0x35FE48, 0x35FEE8));
     if (!dev)

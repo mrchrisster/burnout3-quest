@@ -13,7 +13,7 @@ HERE="$(cd "$(dirname "$0")/../.." && pwd)"
 OUT="$HERE/_shots"
 mkdir -p "$OUT"
 TMP="$(mktemp)"
-{ for kv in "$@"; do echo "$kv"; done; echo "RECOMP_PAD_LIVE=$SD/pad.txt"; } > "$TMP"
+{ for kv in "$@"; do echo "$kv"; done; echo "RECOMP_PAD_LIVE=$SD/pad.txt"; echo "TAKEDAWN_AUTOLOAD=0"; } > "$TMP"
 adb push "$TMP" "$F/env.txt" >/dev/null
 rm -f "$TMP"
 adb shell "chmod 644 $F/env.txt; rm -f $F/pad.txt; touch $F/pad.txt; chmod 666 $F/pad.txt"
