@@ -414,6 +414,13 @@ final class GpuDriver {
                 || !customMeta(c).isEmpty() || (hasBundled(c) && isAdreno());
     }
 
+    /** A Meta Quest headset (Horizon OS). */
+    static boolean isQuest() {
+        String m = android.os.Build.MANUFACTURER, model = android.os.Build.MODEL;
+        return (m != null && m.equalsIgnoreCase("Oculus"))
+                || (model != null && model.startsWith("Quest"));
+    }
+
     static GpuDriver choose(Context c, String override) {
         int sys = systemVulkanVersion(c);
         String sysWhat = "the device's own driver (Vulkan " + versionString(sys) + ")";
@@ -421,6 +428,12 @@ final class GpuDriver {
             return new GpuDriver(null, null, sysWhat + ", as env.txt asks");
         }
         String ch = override != null ? "auto" : choice(c);
+        if (override == null && "auto".equals(ch) && isQuest()) {
+            // Meta Quest (quest3-xr): its own Adreno driver is Vulkan 1.3
+            // (whatever the package manager's feature says), and the
+            // bundled Turnip cannot make a device on its KGSL.
+            return new GpuDriver(null, null, "the headset's own driver (Meta Quest)");
+        }
         String note = null;
         File trial = trialFile(c);
         if (override == null && trial.isFile()) {

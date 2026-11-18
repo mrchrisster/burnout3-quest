@@ -109,6 +109,13 @@ TD="$D/turnip-a725"
 [ "${BO3_ANDROID_TURNIP:-1}" = mesa ] && TD="$D/turnip"
 ADRENO=()
 [ -f "$D/adrenotools/lib/libadrenotools.a" ] && ADRENO=(-DXBOXRECOMP_ANDROID_ADRENOTOOLS="$D/adrenotools")
+# Meta Quest (quest3-xr): the game on a floating OpenXR screen, with the
+# Khronos loader from BO3_OPENXR_DIR (include/, lib/arm64-v8a/; default
+# _deps/openxr, unpacked from openxr_loader_for_android's .aar).
+# BO3_OPENXR_DIR=none builds the plain Android APK.
+OXR="${BO3_OPENXR_DIR:-$HERE/_deps/openxr}"
+XR=()
+[ "$OXR" != none ] && [ -f "$OXR/lib/$ABI/libopenxr_loader.so" ] && XR=(-DXBOXRECOMP_OPENXR_DIR="$OXR")
 
 for p in $PROGRAMS; do
 IFS=: read -r REGION DISC_MANIFEST GEN_NAME LIB <<< "$p"
@@ -124,6 +131,7 @@ cmake -S "$HERE" -B "$BR" -G Ninja -DCMAKE_BUILD_TYPE=Release \
   -DVulkan_LIBRARY="$SYSROOT/usr/lib/aarch64-linux-android/$API/libvulkan.so" \
   -DBO3_BIN_DIR="$BR/lib" \
   ${ADRENO[@]+"${ADRENO[@]}"} \
+  ${XR[@]+"${XR[@]}"} \
   -DBO3_REGION="$REGION" "$@"
 cmake --build "$BR" --target burnout3 -j"$JOBS"
 # -ffp-contract=off held: no fused multiply-add in the game or the toolkit
@@ -131,7 +139,7 @@ cmake --build "$BR" --target burnout3 -j"$JOBS"
 # NDK's default contraction: glslang compiles shaders, and ncnn's NEON
 # kernels run the menu pictures' upscale (BO-326, its fused multiply-adds
 # are intrinsics); neither is the game's arithmetic.
-"$HERE/tools/release/check-fp.sh" "$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-objdump" "$BR/lib/lib$LIB.so" \
+"$HERE/tools/release/check-fp.sh" "$NDK/toolchains/llvm/prebuilt/$HOST_TAG/bin/llvm-objdump" "$BR/lib/lib$LIB.so" \
   '^(_ZN7glslang|_ZNK7glslang|_ZN3spv|_ZNK3spv|_ZN4spvtools|_ZNK4spvtools|_ZN6spvutils|_ZNK6spvutils|_ZN12_GLOBAL__N_1|_ZNK12_GLOBAL__N_1|_ZN3std|_ZN4ncnn|_ZNK4ncnn)'
 done
 
@@ -248,6 +256,10 @@ for p in $PROGRAMS; do
 done
 cp "$D/SDL2/lib/libSDL2.so" \
    "$SYSROOT/usr/lib/aarch64-linux-android/libc++_shared.so" "$OUT/pack/lib/$ABI/"
+if [ ${#XR[@]} -gt 0 ]; then
+  cp "$OXR/lib/$ABI/libopenxr_loader.so" "$OUT/pack/lib/$ABI/"
+  echo "   with the OpenXR loader (Meta Quest screen)"
+fi
 if [ ${#ADRENO[@]} -gt 0 ]; then
   # libadrenotools opens its hooks from the app's native library directory.
   cp "$D/adrenotools/lib/libhook_impl.so" "$D/adrenotools/lib/libmain_hook.so" \

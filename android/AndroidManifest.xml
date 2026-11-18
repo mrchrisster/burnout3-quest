@@ -15,6 +15,10 @@
     <uses-feature android:name="android.hardware.gamepad" android:required="false" />
     <uses-feature android:name="android.hardware.usb.host" android:required="false" />
     <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
+    <!-- Meta Quest (quest3-xr): the game on a floating OpenXR screen
+         (xboxrecomp src/video/xr_theater.c); phones keep the flat window. -->
+    <uses-feature android:name="android.hardware.vr.headtracking" android:version="1" android:required="false" />
+    <uses-feature android:name="com.oculus.feature.PASSTHROUGH" android:required="false" />
 
     <!-- Rumble (the pad's, or the device's own motor). -->
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -65,6 +69,9 @@
              the system does not lower its resolution or frame rate. -->
         <meta-data android:name="android.game_mode_config"
             android:resource="@xml/game_mode_config" />
+
+        <meta-data android:name="com.oculus.supportedDevices" android:value="quest2|questpro|quest3|quest3s" />
+        <meta-data android:name="com.oculus.vr.focusaware" android:value="true" />
 
         <!-- simpleperf from adb may sample a release build. -->
         <profileable android:shell="true" />
@@ -125,7 +132,14 @@
             android:screenOrientation="sensorLandscape"
             android:configChanges="layoutDirection|locale|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:preferMinimalPostProcessing="true"
-            android:exported="false" />
+            android:exported="false">
+            <!-- On a Quest headset the game is immersive: its own OpenXR
+                 session (the setup and driver pages stay 2D panels). -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="org.khronos.openxr.intent.category.IMMERSIVE_HMD" />
+            </intent-filter>
+        </activity>
 
         <!-- While the menu pictures are made (UpscaleService): one in the
              game's process, one in the setup page's. -->
