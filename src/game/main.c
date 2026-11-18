@@ -81,6 +81,7 @@ extern void xbox_InputPanicStop(int wait_ms);
 #include "onlinebot.h"                /* the online test navigator (BO-134) */
 #include "react.h"                    /* the quick reactions (BO-352) */
 #include "onlinenav.h"                /* the player's online navigator (BO-352) */
+#include "bootnav.h"                  /* straight to the main menu (Quest port) */
 #include "xboxlive.h"                 /* Takedawn Online: the online page (bo3_xboxlive_flip) */
 #include "dsound_notify.h"            /* the DirectSound done-list guard (BO-173) */
 #include "gp_image.h"                 /* the GP effects image (BO-119) */
@@ -2431,6 +2432,7 @@ static void uw_flip(void)
     bo3_score_board_flip();
     bo3_onlinebot_flip(n);              /* nothing unless switched on */
     bo3_onlinenav_flip(n);              /* nothing unless started */
+    bo3_bootnav_flip();                 /* the boot's way to the main menu (Quest port) */
     bo3_xboxlive_flip();                /* Takedawn Online's code entry and description line */
     bo3_online_flip();                  /* links, kick line, reactions: main thread only */
     pace_log(n);
@@ -3367,6 +3369,11 @@ static void host_saves_init(int argc, char **argv)
     if (keep > 0 && recomp_save_backup(s_save_dir, keep, backup, sizeof backup))
         XR_NOTICE("[SAVE] backup: %s (keeping %d)\n", backup, keep);
     XR_NOTICE("[SAVE] dir: %s\n", s_save_dir);
+    /* Quest port: a seed profile into an empty save folder, the upscaler's
+     * shaders from the APK, and straight to the main menu (bootnav.c). */
+    bo3_bootnav_seed(s_save_dir);
+    bo3_android_unpack_shaders();
+    bo3_bootnav_start(s_save_dir);
     if (s_import_report[0])
         XR_NOTICE("[SAVE] %s\n", s_import_report);
 #ifdef XBOXRECOMP_HAVE_OVERLAY

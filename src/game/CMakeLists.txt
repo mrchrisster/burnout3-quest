@@ -164,7 +164,7 @@ target_sources(burnout3 PRIVATE ${_mm_marks_c})
 
 # Online play (BO-134 spike): the title's XNet/XOnline on host sockets, off
 # unless TAKEDAWN_ONLINE=1.
-target_sources(burnout3 PRIVATE online.c onlinebot.c lobbystatus.c statustext.c react.c onlinenav.c onlinescreens.c onlineinfo.c ${CMAKE_CURRENT_SOURCE_DIR}/../../tools/lobby/aries_server.c)
+target_sources(burnout3 PRIVATE online.c onlinebot.c lobbystatus.c statustext.c react.c onlinenav.c onlinescreens.c bootnav.c onlineinfo.c ${CMAKE_CURRENT_SOURCE_DIR}/../../tools/lobby/aries_server.c)
 # BO-352: react.c provides bo3_react_ticker_text; status_tick prefers it.
 target_compile_definitions(burnout3 PRIVATE BO3_HAVE_REACT=1)
 

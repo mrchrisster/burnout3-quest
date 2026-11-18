@@ -75,3 +75,10 @@ tools/headless/local.env
 # Release pipeline (tools/release/): artefacts, and the per-machine settings
 dist/
 tools/release/local.env
+
+# Quest port, local only
+_apk/
+_disc/
+_deps/
+_seed/
+_shots/

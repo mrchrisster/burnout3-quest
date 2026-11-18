@@ -36,6 +36,7 @@
 #include "touch_pad.h"                 /* the on-screen controls (BO-189) */
 #include "react.h"                    /* the quick reactions (BO-352) */
 #include "onlinenav.h"                 /* the player's online navigator (BO-352) */
+#include "bootnav.h"                  /* straight to the main menu (Quest port) */
 #include "onlinebrand.h"               /* replace the loaded service names before menus build */
 #include "headfont.h"                  /* the heading font's W, the TAKEDAWN ONLINE heading */
 #include "xboxlive.h"                  /* the Xbox Live menu's code picker (BO-352) */
@@ -194,6 +195,8 @@ static void ctl_pad(void)
      * the player's own presses do not mix in and B still cancels. Nothing
      * unless a navigator is running. */
     bo3_onlinenav_pad(port, g);
+    /* Quest port: the boot's presses to the main menu (bootnav.c). */
+    bo3_bootnav_pad(port, g);
     /* BO-352: the Xbox Live code picker's left/right (xboxlive.c). Nothing
      * unless the picker is up. */
     bo3_xboxlive_pad(port, g);

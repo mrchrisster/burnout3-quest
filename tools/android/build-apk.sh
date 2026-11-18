@@ -224,6 +224,24 @@ fi
 # in assets/upscaler/, which the game reads with SDL (upscale.c).
 mkdir -p "$OUT/assets/upscaler"
 cp "$D/upscaler/realesr-general-dn030-x4v3.param" "$D/upscaler/realesr-general-dn030-x4v3.bin" "$OUT/assets/upscaler/"
+# Quest port: the world texture upscaler's shader files (graphics.texture_upscale;
+# LGPL, the toolkit's third_party/upscale_shaders), unpacked to the app's files
+# at the start (src/game/bootnav.c), and a seed profile from BO3_SEED_SAVE
+# (default _seed: a save folder's UDATA/..., copied into an empty save folder).
+US="$TK/third_party/upscale_shaders"
+if [ -f "$US/VERSION" ]; then
+  mkdir -p "$OUT/assets/upscale_shaders"
+  ( cd "$US" && ls *.comp VERSION COPYING COPYING.LESSER NOTICE.md 2>/dev/null ) > "$OUT/assets/upscale_shaders/list.txt"
+  while read -r f; do cp "$US/$f" "$OUT/assets/upscale_shaders/"; done < "$OUT/assets/upscale_shaders/list.txt"
+  echo "   texture upscaler shaders: $(wc -l < "$OUT/assets/upscale_shaders/list.txt" | tr -d ' ') files"
+fi
+SEED="${BO3_SEED_SAVE:-$HERE/_seed}"
+if [ -d "$SEED/UDATA" ]; then
+  mkdir -p "$OUT/assets/seed"
+  ( cd "$SEED" && find UDATA -type f ) > "$OUT/assets/seed/list.txt"
+  ( cd "$SEED" && tar cf - UDATA ) | ( cd "$OUT/assets/seed" && tar xf - )
+  echo "   seed profile: $(wc -l < "$OUT/assets/seed/list.txt" | tr -d ' ') files from $SEED"
+fi
 [ -f "$AL/ncnn-LICENSE.txt" ] || cp "$D/ncnn/LICENSE.txt" "$AL/ncnn-LICENSE.txt"
 [ -f "$AL/Real-ESRGAN-BSD-3-Clause.txt" ] || cp "$HERE/tools/release/licenses/Real-ESRGAN-BSD-3-Clause.txt" "$AL/"
 if [ "${BO3_REQUIRE_LICENSES:-0}" = 1 ]; then
