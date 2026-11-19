@@ -66,7 +66,7 @@ applies.
 | Left / Right Grip (`LB` / `RB`) | White / Black |
 | Left / Right Stick Click (`L3` / `R3`) | Left / Right Thumb |
 | Left Menu Button | Start |
-| **`L3 + R3` (click both sticks)** | **VR menu**: resume, background (dark room / mixed reality), **3D depth** (off / normal / deep / extra), recenter, reset screen, exit |
+| **`L3 + R3` (click both sticks)** | **VR menu**: resume, **mode** (screen / immersive beta: head-tracked races), background (dark room / mixed reality), **3D depth** (off / normal / deep / extra), recenter, reset screen, exit |
 | **`LB + RB + L3`** | **Toggle 3D on / off live** |
 | **Hold `LB + RB` (both grips)** | **Window mode: move the screen with your hands, pull hands apart / together for distance** |
 | `LB + RB` + Left Stick Up/Down | Screen distance |

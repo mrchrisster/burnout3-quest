@@ -151,7 +151,25 @@ Measured standing at the start line of the first Single Event race (scripted by 
   far + 0x84: the race camera is 100.4 x 68.0 degrees (1.2 x 0.675, 16:9), near 0.5, far 10000; the front end's is
   30 x 22.7.
 
-Next stages:
+## Head-tracked mode: stages 2-4, beta (VR menu MODE: IMMERSIVE, off by default)
+
+- Each picture the game takes the latest head pose, predicted two display periods ahead, relative to the re-centred
+  origin (heading only), and turns and moves the race camera by it (OpenXR's head axes into RW's: right points to the
+  screen's left, at is forward; 1 unit taken as 1 m). The view window becomes the headset's field of view (the
+  widest eye tangent, about 108 degrees, the picture's aspect kept).
+- The pose's index rides in the push buffer (a stream mark with the top bit set) to the scene snapshot, so the
+  presenter knows which eye poses a picture was drawn for; the frame thread submits it as a projection layer with
+  those poses, and the compositor's reprojection hides the latency. Menus and films (no posed scene) stay on the
+  floating screen.
+- The eyes come from the depth stereo with the physical shift ((IPD/2)/z of the half width, zero at infinity).
+- On the Quest (autopilot, standing headset): 60 game fps, 120 Hz, GPU 83 %, no crash; the view fills the headset's
+  width and stays locked to the world.
+- Not yet: the HUD is still in the picture (it should go on its own quad); the game's culling uses its own narrower
+  frustum (things can pop in at the edges); a 16:9 picture leaves black above and below (a 4:3 game picture would
+  fill more); the world scale and the level-horizon option need a headset test; the game camera's own pitch and
+  roll still move the world.
+
+Earlier plan:
 
 1. The headset's pose each picture (`xr_theater.c`, the predicted display time's view pose, re-centred) turns and
    moves the camera: OpenXR's head axes (x right, y up, -z forward) into the camera's (right, up, at), the offset in
@@ -164,6 +182,6 @@ Next stages:
 
 ## Open
 
-- The head-tracked mode's stages 2-4 (above).
+- The head-tracked mode's open points (above): the HUD quad, the culling frustum, 4:3, comfort options.
 - The boot auto-load's seed profile is opt-in (`BO3_SEED_SAVE`) and never in a published APK: a fresh install makes
   its profile in the game once.
