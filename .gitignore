@@ -76,9 +76,16 @@ tools/headless/local.env
 dist/
 tools/release/local.env
 
-# Quest port, local only
+# Quest port (quest3-xr), local only: nothing from the disc or the player.
+# _disc: disc images; _seed: a save to seed (BO3_SEED_SAVE); _shots: headset
+# screenshots and logs of the game; _texdump/_texpack: the game's own textures
+# and their upscales; _deps: the OpenXR loader unpacked from its .aar; _apk:
+# downloaded release APKs.
 _apk/
 _disc/
 _deps/
 _seed/
 _shots/
+_texdump/
+_texpack/
+.venv/

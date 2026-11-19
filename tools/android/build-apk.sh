@@ -226,8 +226,9 @@ mkdir -p "$OUT/assets/upscaler"
 cp "$D/upscaler/realesr-general-dn030-x4v3.param" "$D/upscaler/realesr-general-dn030-x4v3.bin" "$OUT/assets/upscaler/"
 # Quest port: the world texture upscaler's shader files (graphics.texture_upscale;
 # LGPL, the toolkit's third_party/upscale_shaders), unpacked to the app's files
-# at the start (src/game/bootnav.c), and a seed profile from BO3_SEED_SAVE
-# (default _seed: a save folder's UDATA/..., copied into an empty save folder).
+# at the start (src/game/bootnav.c), and, only when BO3_SEED_SAVE names one,
+# a seed profile (a save folder's UDATA/..., copied into an empty save folder;
+# never in a published APK: it is the player's own save).
 US="$TK/third_party/upscale_shaders"
 if [ -f "$US/VERSION" ]; then
   mkdir -p "$OUT/assets/upscale_shaders"
@@ -235,8 +236,8 @@ if [ -f "$US/VERSION" ]; then
   while read -r f; do cp "$US/$f" "$OUT/assets/upscale_shaders/"; done < "$OUT/assets/upscale_shaders/list.txt"
   echo "   texture upscaler shaders: $(wc -l < "$OUT/assets/upscale_shaders/list.txt" | tr -d ' ') files"
 fi
-SEED="${BO3_SEED_SAVE:-$HERE/_seed}"
-if [ -d "$SEED/UDATA" ]; then
+SEED="${BO3_SEED_SAVE:-}"   # opt-in only: a save is the player's own data
+if [ -n "$SEED" ] && [ -d "$SEED/UDATA" ]; then
   mkdir -p "$OUT/assets/seed"
   ( cd "$SEED" && find UDATA -type f ) > "$OUT/assets/seed/list.txt"
   ( cd "$SEED" && tar cf - UDATA ) | ( cd "$OUT/assets/seed" && tar xf - )
