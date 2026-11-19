@@ -18,6 +18,9 @@ adb push "$TMP" "$F/env.txt" >/dev/null
 rm -f "$TMP"
 adb shell "chmod 644 $F/env.txt; rm -f $F/pad.txt; touch $F/pad.txt; chmod 666 $F/pad.txt"
 adb shell am force-stop $P
+if [ -n "${XRVIEW:-}" ]; then      # e.g. XRVIEW="t2 1.8 1.2 0.077 1 2": dark room, 3D DEEP
+  adb shell "echo '$XRVIEW' > $F/xr_view.txt; chmod 666 $F/xr_view.txt"
+fi
 adb shell am broadcast -a com.oculus.vrpowermanager.prox_close >/dev/null
 adb logcat -c
 adb shell am start -n $P/.StartActivity >/dev/null
@@ -33,7 +36,22 @@ p a:200 20              # car -> loading, tutorial cards
 for i in 1 2 3 4 5; do p a:200 3; done
 sleep 10
 adb logcat -c
-sleep 15
+# MEASURE: seconds measured in the race (default 15); SHOTS: extra VR
+# screenshots spread over it (race_<name>_<n>.jpg).
+M="${MEASURE:-15}"; NS="${SHOTS:-0}"
+if [ "$NS" -gt 0 ]; then
+  step=$((M / (NS + 1)))
+  for n in $(seq 1 "$NS"); do
+    sleep "$step"
+    adb shell am startservice -n com.oculus.metacam/.capture.CaptureService -a TAKE_SCREENSHOT >/dev/null 2>&1
+    sleep 3
+    s=$(adb shell ls -t /sdcard/Oculus/Screenshots | grep "^$P" | head -1 | tr -d '\r')
+    [ -n "$s" ] && adb pull "/sdcard/Oculus/Screenshots/$s" "$OUT/race_${NAME}_$n.jpg" >/dev/null
+  done
+  sleep "$step"
+else
+  sleep "$M"
+fi
 LOG="$OUT/race_$NAME.log"
 adb logcat -d > "$LOG"
 adb shell "cat $F/takedawn/logs/run.tail.log" > "$OUT/race_$NAME.game.log" 2>/dev/null
