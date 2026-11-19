@@ -119,9 +119,12 @@ Measured standing at the start line of the first Single Event race (scripted by 
   scenes.
 - A fresh install (`pm clear`, the setup page from an `.xiso`, then the game) with a seed profile in the APK: the
   profile is copied into the empty save folder and the boot reaches the main menu by itself in 15.7 s.
-- Known 3D artifact: thin light slivers beside thin near objects (the fence posts at the start of the first race),
-  where the per-eye lookup lands on background between posts. A search over candidate shifts would fix it; the
-  three-texel depth minimum does little.
+- 3D artifact, fixed: thin light slivers beside thin near objects (the fence posts at the start of the first race).
+  Their soft edges carry the post's colour over the background's depth, so the per-eye lookup moved them with the
+  background. Each eye's pixel now searches the shift range for the source pixels whose shifted place it is (24
+  steps, on depth widened to the nearest of three texels) and takes the nearest; holes fall back to the fixed-point
+  lookup, and ranges without a depth edge keep it. Cost: app GPU time 5.2-5.4 ms against 3.9 at the race start;
+  racing in mixed reality with the AI pack 58.3 fps (GPU 87 %), in the dark room 60.
 - Files pushed with adb cannot make nested folders under folders the app made (`secure_mkdirs ... Operation not
   permitted`): `adb shell mkdir -p` the folders first, push the files into them, then `chmod`.
 
