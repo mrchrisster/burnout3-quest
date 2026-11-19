@@ -98,6 +98,25 @@ Measured standing at the start line of the first Single Event race (scripted by 
   The first race's 239 textures took 2.5 min on an Apple-silicon Mac (324 MB of PNG). Packs are capped at 256 MB of
   GPU memory on Android: `RECOMP_DEBUG=texpack_cap_mb=1024` raises it. Packs are made from the game and stay with you.
 
+## Playtests (3D on, the AI pack, Takedawn's autopilot driving: `RECOMP_DEBUG=autopilot=1`)
+
+| Run | Game fps | GPU | Notes |
+| --- | --- | --- | --- |
+| race start, 3D NORMAL, dark room, aniso 16x | 59.1 | 59 % | |
+| race start, + AI pack (239 textures, `texpack_cap_mb=1024`) | 60.0 | 61 % | signs and shop fronts sharper |
+| 60 s of racing, 3D NORMAL, AI pack | 60.0 | 60 % | 129-145 mph, no crash |
+| 60 s of racing, 3D DEEP, AI pack | 60.0 | 63 % | 143-149 mph, 6276 frames in 3D, no crash |
+
+- Passthrough (mixed reality) costs about 20 % of the GPU against the dark room: 78-83 % vs 59-63 % in the same
+  scenes.
+- A fresh install (`pm clear`, the setup page from an `.xiso`, then the game) with a seed profile in the APK: the
+  profile is copied into the empty save folder and the boot reaches the main menu by itself in 15.7 s.
+- Known 3D artifact: thin light slivers beside thin near objects (the fence posts at the start of the first race),
+  where the per-eye lookup lands on background between posts. A search over candidate shifts would fix it; the
+  three-texel depth minimum does little.
+- Files pushed with adb cannot make nested folders under folders the app made (`secure_mkdirs ... Operation not
+  permitted`): `adb shell mkdir -p` the folders first, push the files into them, then `chmod`.
+
 ## Testing on a Quest without wearing it
 
 - Keep it awake: `adb shell am broadcast -a com.oculus.vrpowermanager.prox_close` (`prox_far` to undo).
