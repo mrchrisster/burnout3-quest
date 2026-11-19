@@ -85,6 +85,7 @@ Back + Start as on every platform.
 | `RECOMP_GFX_ANISO=16` | 16x anisotropic filtering |
 | `RECOMP_GFX_TEXTURE_UPSCALE=nnedi3` + `RECOMP_GFX_TEXTURE_UPSCALE_SCALE=2x` | the world textures upscaled 2x on the GPU (holds 60 fps) |
 | `RECOMP_XR=0` | no OpenXR: Takedawn's flat Android window |
+| `RECOMP_XR_HZ=90` + `RECOMP_GFX_HIGH_REFRESH=1` | 90 Hz with frames blended between the game's 60 steps: 85-89 frames a second in races |
 | `RECOMP_XR_HZ=90` | the headset's refresh (default 120) |
 | `TAKEDAWN_AUTOLOAD=0` | the title's own boot screens (no auto-load of the profile) |
 

@@ -70,8 +70,16 @@ replays the Xbox's push buffer, so the same shift is applied after the fact, fro
 
 Cost at the race start: 59 fps instead of 60, GPU 82-83 % instead of 78 % (with the texture upscaler on).
 
-Takedawn's High refresh rate (frames blended between the 60 Hz steps) turns on in the headset but does not fit the
-OpenXR loop yet: at 120 Hz 64.6 game frames a second, at 90 Hz 56. Needed for a head-tracked mode later.
+Takedawn's High refresh rate (frames blended between the 60 Hz steps, `RECOMP_GFX_HIGH_REFRESH=1`) works in the
+headset in races (it leaves menus and the pre-race at the title's own rate, which is why a test standing at the start
+line showed only 56-64 frames a second). Racing with the autopilot, 3D NORMAL:
+
+| Headset rate | Game frames/s | GPU |
+| --- | --- | --- |
+| 90 Hz (`RECOMP_XR_HZ=90`) | 85.5-89.3 | 70 % |
+| 120 Hz | 84.7 | 75 % |
+
+90 Hz with high refresh is the smoothest screen today, and the base a head-tracked mode would pace from.
 
 ## Textures
 
