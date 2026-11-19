@@ -25,7 +25,8 @@ applies.
   dark room, at 120 Hz composition (each of the game's 60 frames shown twice, evenly).
 - **Stereoscopic 3D look, Futurama style:** each eye is made from the frame's 3D scene and its depth buffer, taken
   right before the HUD is drawn (Burnout's own scene marks). Far scenery sits behind the screen, the car on it; the
-  HUD, menus and films stay flat at zero disparity. 3D DEPTH: off / normal / deep / extra.
+  HUD and menus float just in front of the nearest point of the scene (a results or pause page is never cut through),
+  films stay flat. 3D DEPTH: off / normal / deep / extra.
 - **GPU path end to end:** Takedawn's Vulkan device is made by the OpenXR runtime (`XR_KHR_vulkan_enable2`); every
   frame is drawn into the headset's swapchain with a render pass (no copy, no CPU readback), at most 1920 wide.
 - **Sharper textures:** the world texture upscaler (NNEDI3 / FSRCNNX, on the GPU) ships in the APK, and Takedawn
