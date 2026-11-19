@@ -164,10 +164,18 @@ Measured standing at the start line of the first Single Event race (scripted by 
 - The eyes come from the depth stereo with the physical shift ((IPD/2)/z of the half width, zero at infinity).
 - On the Quest (autopilot, standing headset): 60 game fps, 120 Hz, GPU 83 %, no crash; the view fills the headset's
   width and stays locked to the world.
-- Not yet: the HUD is still in the picture (it should go on its own quad); the game's culling uses its own narrower
-  frustum (things can pop in at the edges); a 16:9 picture leaves black above and below (a 4:3 game picture would
-  fill more); the world scale and the level-horizon option need a headset test; the game camera's own pitch and
-  roll still move the world.
+- Round two:
+  - The camera is turned before `RwCameraBeginUpdate`'s sync, in its modelling matrix (the race camera's frame is a
+    root frame, dirty every picture), with the view window set there too: RenderWare then builds the LTM and the
+    camera's culling frustum from them, so the game's culling follows the head and the wider view (a FULL view draws
+    the trees and sky above the old frustum). A frame that was not dirty still gets the turned LTM after the sync.
+  - The HUD (frame != scene) is taken out of the eyes and drawn into its own 1280x720 panel, transparent elsewhere: a
+    quad 1.1 m ahead of the seat, 0.2 m below the eyes, tipped back (GT3 Revisited's HUD panel).
+  - LEVEL HORIZON (on by default): the camera's heading only, world up kept, before the head's turn.
+  - VIEW: 16:9 (the game's), 4:3 or FULL (square: the whole eye's field of view); the projection layer's field of view
+    is the one the game drew with (`xrt_pose_set_tanv`).
+  - On the Quest (autopilot): 60 game fps at 16:9 and 59.8 at FULL, GPU 84 %, no crash.
+- Still to try in the headset: the world scale (1 unit = 1 m assumed) and comfort with head motion.
 
 Earlier plan:
 
@@ -182,6 +190,6 @@ Earlier plan:
 
 ## Open
 
-- The head-tracked mode's open points (above): the HUD quad, the culling frustum, 4:3, comfort options.
+- The head-tracked mode: a test with head motion (scale, comfort); a HUD panel that can be moved.
 - The boot auto-load's seed profile is opt-in (`BO3_SEED_SAVE`) and never in a published APK: a fresh install makes
   its profile in the game once.
