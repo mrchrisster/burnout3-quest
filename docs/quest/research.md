@@ -139,9 +139,31 @@ Measured standing at the start line of the first Single Event race (scripted by 
   scripted way to a race (`tools/quest/texrace.sh`), with `TAKEDAWN_AUTOLOAD=0`.
 - The game's log: `files/takedawn/logs/run.log` (and `run.tail.log`).
 
+## Head-tracked mode: stage 1 (the camera hook, `src/game/xrcam.c`)
+
+- The view being drawn (`0x4D6520`, hirefresh.c's `blend_view`) holds its RwCamera at + 0x58; the camera's frame is
+  its RwObject parent (+ 4), the frame's LTM at + 0x50 (right, up, at, pos). `RwCameraBeginUpdate` (`sub_001D91B0`,
+  now wrapped through the lifter's `sub_X_gen` mechanism) calls `_rwFrameSyncDirty` and then builds the device's view
+  from that LTM. In that sync, for the view's own camera only (not the reflection or shadow cameras), xrcam turns
+  the LTM; the true LTM goes back at the start of the next `CB3Game::Update`, before any step.
+- Proven on the Quest with a test turn (`TAKEDAWN_XRCAM_YAW=25`: the race view swings 25 degrees, the race goes on);
+  `TAKEDAWN_XRCAM_LOG=1` logs the camera. RwCamera's view window is at + 0x68 (tan of the half angles), near + 0x80,
+  far + 0x84: the race camera is 100.4 x 68.0 degrees (1.2 x 0.675, 16:9), near 0.5, far 10000; the front end's is
+  30 x 22.7.
+
+Next stages:
+
+1. The headset's pose each picture (`xr_theater.c`, the predicted display time's view pose, re-centred) turns and
+   moves the camera: OpenXR's head axes (x right, y up, -z forward) into the camera's (right, up, at), the offset in
+   world units, optionally the heading only (level horizon).
+2. The eye field of view in the view window (each eye's `XrFovf` tangents), so one rendered picture covers an eye.
+3. The picture shown as a projection layer (pose and FOV as rendered, so the compositor's reprojection corrects the
+   latency), each eye from the depth stereo with a disparity matched to the IPD; the HUD (frame != scene) on its
+   own quad in front, premultiplied.
+4. A VR menu toggle (off by default), recentre, comfort (level horizon), high refresh (90 Hz) for pacing.
+
 ## Open
 
-- A head-tracked immersive mode (GT3's model): the RenderWare camera, per-eye view/projection, the HUD on its own
-  panel, high-refresh pacing against `xrWaitFrame`.
+- The head-tracked mode's stages 2-4 (above).
 - The boot auto-load's seed profile is opt-in (`BO3_SEED_SAVE`) and never in a published APK: a fresh install makes
   its profile in the game once.

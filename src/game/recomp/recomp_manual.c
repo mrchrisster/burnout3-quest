@@ -18,6 +18,7 @@
  *   - Intercept D3D/audio calls for custom rendering or sound
  */
 
+#include "../xrcam.h"
 #include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -304,8 +305,14 @@ extern void sub_001CA530_gen(void);
 extern void sub_00188750_gen(void);
 extern void sub_0003FA20_gen(void);
 
-void sub_000165F0(void) { bo3_update(sub_000165F0_gen); }
-void sub_001E15E0(void) { bo3_frame_sync_dirty(sub_001E15E0_gen); }
+/* Quest port (xrcam.c): the true camera back before the steps. */
+void sub_000165F0(void) { bo3_xrcam_restore(); bo3_update(sub_000165F0_gen); }
+void sub_001E15E0(void) { bo3_frame_sync_dirty(sub_001E15E0_gen); bo3_xrcam_apply(); }
+/* RwCameraBeginUpdate (cdecl, the camera): the device's view is built from
+ * the camera frame's LTM right after its frame sync; xrcam.c turns the view's
+ * camera by the head in that sync (Quest port). */
+extern void sub_001D91B0_gen(void);
+void sub_001D91B0(void) { bo3_xrcam_begin_call(); sub_001D91B0_gen(); bo3_xrcam_begin(0); }
 void sub_001DD280(void) { bo3_frame_get_ltm(sub_001DD280_gen); }
 void sub_000303D0(void) { bo3_draw_vehicle(sub_000303D0_gen); }
 void sub_000535E0(void) { bo3_hud_update(sub_000535E0_gen); }
