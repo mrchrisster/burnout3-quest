@@ -47,15 +47,18 @@ applies.
    ```
    The app id is Takedawn's (`io.github.xenophobentx.takedawn`): a Takedawn APK signed with another key has to be
    uninstalled first (its uninstall dialog offers to keep the data).
-2. Put your disc image into the app's folder and run the first-start setup once (the setup page is a 2D panel; the
-   file picker works too):
+2. Copy your disc image (North America, NTSC-U) into the headset's **Download** folder, over USB (the Quest shows up
+   as a drive) or with `adb`:
    ```sh
-   adb push "Burnout 3 - Takedown (USA).xiso.iso" /sdcard/Android/data/io.github.xenophobentx.takedawn/files/bo3.xiso.iso
+   adb push "Burnout 3 - Takedown (USA).xiso.iso" /sdcard/Download/
    ```
-   ```sh
-   adb shell am start -n io.github.xenophobentx.takedawn/.SetupActivity --es image /sdcard/Android/data/io.github.xenophobentx.takedawn/files/bo3.xiso.iso
-   ```
-3. Launch **Takedawn** from **Unknown Sources** in your Quest library.
+3. In the headset, open **Takedawn** from **Unknown Sources** in your library. The setup page opens as a 2D panel:
+   **Choose your Burnout 3: Takedown disc image** → **Downloads** → your image. It is checked in a few seconds (716
+   files); then **Start the game**. The headset's own graphics driver is picked by itself.
+4. The first start shows the game's films and asks for a profile: choose **YES** to save it and pick **PROFILE 1**.
+   From then on the game goes straight to the main menu with your profile (about 15 s).
+
+The library also lists **Takedawn: graphics driver**, the driver page (leave it on Automatic on a Quest).
 
 ### Quest Touch Plus Controls
 

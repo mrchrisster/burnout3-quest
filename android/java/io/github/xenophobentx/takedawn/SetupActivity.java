@@ -74,6 +74,29 @@ public class SetupActivity extends Activity {
     private String[] about = { "Burnout 3: Takedown", "",
             "ntsc-u-retail\t-\tNorth America (NTSC-U) retail\t716\t2476107072\t3000000000" };
 
+    /** Whether this APK has the program of the disc build `b` (BuildInfo.BUILDS). */
+    private static boolean built(String b) {
+        for (String x : BuildInfo.BUILDS) {
+            if (x.equals(b)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** The discs this APK has programs for, for the page's text. */
+    private String builtNames() {
+        StringBuilder sb = new StringBuilder();
+        for (String b : BuildInfo.BUILDS) {
+            String[] d = disc(b);
+            if (sb.length() > 0) {
+                sb.append(" and ");
+            }
+            sb.append(d != null ? d[2] : b);
+        }
+        return sb.toString();
+    }
+
     private static native int nativeState(String root);
     private static native String nativeAbout();
     private static native void nativeCancel();
@@ -282,7 +305,7 @@ public class SetupActivity extends Activity {
             show(another, false, true);
             status.setText("The game's data is installed and checked ("
                     + (here != null ? here[2] + ", " + here[3] + " files" : "the disc's files") + ")."
-                    + (another ? "\n\nTo play another disc (North America, or one of the two European"
+                    + (another && BuildInfo.BUILDS.length > 1 ? "\n\nTo play another disc (North America, or one of the two European"
                         + " ones), choose its image or folder: its data replaces this one's here,"
                         + " and the game starts that disc from then on. Each disc keeps its own"
                         + " saves and settings (the two European discs share theirs)." : ""));
@@ -297,8 +320,8 @@ public class SetupActivity extends Activity {
             StringBuilder which = new StringBuilder();
             long free = 0;
             for (String[] d : ds) {
-                if (d.length < 6) {
-                    continue;
+                if (d.length < 6 || !built(d[0])) {
+                    continue;   // a disc whose program is not in this APK
                 }
                 which.append("\n   ").append(d[2]).append(": ").append(d[3]).append(" files, ")
                         .append(String.format(Locale.ROOT, "%.2f", Long.parseLong(d[4]) / 1e9)).append(" GB");
@@ -398,6 +421,14 @@ public class SetupActivity extends Activity {
         case "wrong-game":
             return "Choose the image of Burnout 3: Takedown.";
         case "wrong-version":
+            if (BuildInfo.BUILDS.length == 1) {
+                String b = BuildInfo.BUILDS[0];
+                String name = b.startsWith("ntsc-u") ? "North America (NTSC-U)"
+                        : b.startsWith("pal-ensv") ? "Europe/Australia (PAL, En/Es/Nl/Sv)"
+                        : b.startsWith("pal") ? "Europe (PAL, Fr/De/It)" : b;
+                return "This copy of the app takes the " + name + " retail disc. The Japanese"
+                        + " disc, the demo and patched copies are different programs.";
+            }
             return "Takedawn takes three retail discs: North America (NTSC-U) and the two"
                     + " European (PAL) ones, French, German and Italian, and English, Spanish,"
                     + " Dutch and Swedish. The Japanese disc, the demo and patched copies are"
@@ -460,6 +491,15 @@ public class SetupActivity extends Activity {
                         running = false;
                         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                         detail.setText("");
+                        if ("ok".equals(r[0]) && !built(r.length > 3 ? r[3] : "-")) {
+                            String[] d = disc(r[3]);
+                            show(true, false, false);
+                            status.setText("The files are " + (d != null ? "the " + d[2] + " disc's" : "another disc's")
+                                    + ", but this copy of the app has the program for "
+                                    + builtNames() + " only. Choose that disc's image, or build"
+                                    + " the app with this disc's program (the README's Building).");
+                            return;
+                        }
                         if ("ok".equals(r[0])) {
                             String build = r.length > 3 ? r[3] : "-";
                             String[] d = disc(build);

@@ -203,13 +203,16 @@ public class DriverActivity extends Activity {
                 });
         // Turnip drives Adrenos only: elsewhere the bundled driver and the
         // packages are not offered (GpuDriver never loads them there).
-        if (GpuDriver.hasBundled(this) && adreno) {
+        // Not on a Quest: Turnip cannot make a device on its KGSL.
+        if (GpuDriver.hasBundled(this) && adreno && !GpuDriver.isQuest()) {
             button("Built-in Turnip, always" + (mesa != null ? " (Mesa " + mesa + ")" : ""),
                     "bundled".equals(ch), new View.OnClickListener() {
                         @Override public void onClick(View v) { choose("bundled"); }
                     });
         }
-        button("This device's driver (Vulkan " + GpuDriver.versionString(sys) + ")"
+        // A Quest's driver reports 1.1 to the package manager but is 1.3.
+        button(GpuDriver.isQuest() ? "The headset's own driver, always"
+                        : "This device's driver (Vulkan " + GpuDriver.versionString(sys) + ")"
                         + (sys < 0x403000 ? ": too old, the game runs on the processor" : ""),
                 "system".equals(ch), new View.OnClickListener() {
                     @Override public void onClick(View v) { choose("system"); }

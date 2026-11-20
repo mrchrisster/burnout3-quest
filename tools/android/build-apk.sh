@@ -60,6 +60,11 @@ HERE="$(cd "$(dirname "$0")/../.." && pwd)"
 for a in "$@"; do case "$a" in -DBO3_REGION=*)
   echo "build-apk.sh builds every disc's library itself (BO3_ANDROID_PROGRAMS); no -DBO3_REGION" >&2; exit 1 ;; esac; done
 APP_ID=io.github.xenophobentx.takedawn; APP_LABEL=Takedawn; APK_TAG=""
+# BO3_APP_ID_SUFFIX=.fresh: a test copy with its own id and data, next to
+# the player's install (a first-install test that leaves their save alone).
+if [ -n "${BO3_APP_ID_SUFFIX:-}" ]; then
+  APP_ID="$APP_ID$BO3_APP_ID_SUFFIX"; APP_LABEL="Takedawn ($BO3_APP_ID_SUFFIX)"; APK_TAG="${BO3_APP_ID_SUFFIX//./-}"
+fi
 # region  build id  generated code  library
 PROGRAMS_ALL="NTSC-U:ntsc-u-retail:gen:main PAL:pal-retail:gen.pal:main_pal PAL-ENSV:pal-ensv-retail:gen.pal-ensv:main_ensv"
 SDK="${ANDROID_HOME:-$HOME/android-sdk}"

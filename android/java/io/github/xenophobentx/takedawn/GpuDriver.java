@@ -106,6 +106,9 @@ final class GpuDriver {
         if ("system".equals(ch)) {
             return "this device's driver (Vulkan " + versionString(sys) + ")";
         }
+        if ("auto".equals(ch) && isQuest()) {
+            return "the headset's own driver (Meta Quest, Vulkan 1.3)";
+        }
         if ("auto".equals(ch) && userFile(c) != null && isAdreno()) {
             return "the file in the driver folder (" + userFile(c).getName() + ")";
         }
@@ -410,7 +413,7 @@ final class GpuDriver {
 
     /** True when the game has a Vulkan 1.3 driver to try. */
     static boolean usable(Context c) {
-        return systemVulkanVersion(c) >= VULKAN_1_3 || userFile(c) != null
+        return isQuest() || systemVulkanVersion(c) >= VULKAN_1_3 || userFile(c) != null
                 || !customMeta(c).isEmpty() || (hasBundled(c) && isAdreno());
     }
 
