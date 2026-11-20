@@ -324,5 +324,10 @@ if [ ! -f "$KS" ]; then
     -alias bo3 -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=burnout3 debug" >/dev/null
 fi
 APK="$HERE/out/takedawn$APK_TAG-android-arm64.apk"
-"$BT/apksigner" sign --ks "$KS" --ks-pass pass:android --key-pass pass:android --out "$APK" "$OUT/aligned.apk"
+# A release key: BO3_KEYSTORE plus its password in BO3_KEYSTORE_PASS (kept out of the repository).
+if [ -n "${BO3_KEYSTORE_PASS:-}" ]; then
+  "$BT/apksigner" sign --ks "$KS" --ks-pass env:BO3_KEYSTORE_PASS --key-pass env:BO3_KEYSTORE_PASS --out "$APK" "$OUT/aligned.apk"
+else
+  "$BT/apksigner" sign --ks "$KS" --ks-pass pass:android --key-pass pass:android --out "$APK" "$OUT/aligned.apk"
+fi
 ls -l "$APK"
