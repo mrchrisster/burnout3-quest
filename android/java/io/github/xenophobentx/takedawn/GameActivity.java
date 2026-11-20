@@ -109,6 +109,20 @@ public class GameActivity extends SDLActivity {
                 android.widget.Toast.makeText(this, d.note, android.widget.Toast.LENGTH_LONG).show();
                 Log.i(TAG, "GPU driver: " + d.note);
             }
+            // Immersive mode (xr_view.txt "t4 ... imm ..."): the one picture
+            // fills most of the view, so it is drawn at render scale 2
+            // (1280x960) and the headset runs at 90 Hz, which leaves the GPU
+            // the time for it (120 Hz drops to 77 there). env.txt overrides.
+            boolean imm = immersiveSaved(new File(files, "xr_view.txt"));
+            for (String k : new String[] {"RECOMP_RENDER_SCALE", "RECOMP_XR_HZ"})
+                if (!env.containsKey(k))
+                    Os.unsetenv(k);
+            if (imm) {
+                env.putIfAbsent("RECOMP_RENDER_SCALE", "2");
+                env.putIfAbsent("RECOMP_XR_HZ", "90");
+                Log.i(TAG, "immersive mode: render scale " + env.get("RECOMP_RENDER_SCALE")
+                        + ", " + env.get("RECOMP_XR_HZ") + " Hz");
+            }
             for (java.util.Map.Entry<String, String> e : env.entrySet()) {
                 Os.setenv(e.getKey(), e.getValue(), true);
                 Log.i(TAG, "env.txt: " + e.getKey() + "=" + e.getValue());
@@ -376,6 +390,21 @@ public class GameActivity extends SDLActivity {
     }
 
     /** NAME=value lines; '#' starts a comment line. */
+    /** Whether the VR view was left in immersive mode: "t3"/"t4" lines, the 6th number after the tag. */
+    private static boolean immersiveSaved(File f) {
+        if (!f.isFile())
+            return false;
+        try (java.io.BufferedReader r = new java.io.BufferedReader(new java.io.FileReader(f))) {
+            String l = r.readLine();
+            if (l == null)
+                return false;
+            String[] t = l.trim().split("\\s+");
+            return (t[0].equals("t3") || t[0].equals("t4")) && t.length > 6 && !t[6].equals("0");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private static java.util.Map<String, String> readEnvFile(File f) throws Exception {
         java.util.Map<String, String> env = new java.util.LinkedHashMap<>();
         if (!f.isFile()) {
