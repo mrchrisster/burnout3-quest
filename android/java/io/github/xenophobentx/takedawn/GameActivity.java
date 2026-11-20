@@ -109,19 +109,42 @@ public class GameActivity extends SDLActivity {
                 android.widget.Toast.makeText(this, d.note, android.widget.Toast.LENGTH_LONG).show();
                 Log.i(TAG, "GPU driver: " + d.note);
             }
-            // Immersive mode (xr_view.txt "t4 ... imm ..."): the one picture
-            // fills most of the view, so it is drawn at render scale 2
-            // (1280x960) and the headset runs at 90 Hz, which leaves the GPU
-            // the time for it (120 Hz drops to 77 there). env.txt overrides.
-            boolean imm = immersiveSaved(new File(files, "xr_view.txt"));
-            for (String k : new String[] {"RECOMP_RENDER_SCALE", "RECOMP_XR_HZ"})
+            // Graphics on a Quest: the VR menu's GRAPHICS rows (files/xr_graphics.txt,
+            // "g1 upscale aniso scale_x2 hz"), else the headset's defaults: a Quest 2
+            // the light set (no upscaler, 4x, render scale 1, 72 Hz), the others the
+            // full one (NNEDI3 2x, 16x, 1.5, 120 Hz). Immersive mode (xr_view.txt) on
+            // a Quest 3/3S/Pro draws at 2 and runs at 90 Hz: its one picture fills
+            // most of the view. Anything env.txt sets wins.
+            String[] gk = {"RECOMP_RENDER_SCALE", "RECOMP_XR_HZ", "RECOMP_GFX_ANISO",
+                    "RECOMP_GFX_TEXTURE_UPSCALE", "RECOMP_GFX_TEXTURE_UPSCALE_SCALE", "BO3_GFX"};
+            for (String k : gk)
                 if (!env.containsKey(k))
                     Os.unsetenv(k);
-            if (imm) {
-                env.putIfAbsent("RECOMP_RENDER_SCALE", "2");
-                env.putIfAbsent("RECOMP_XR_HZ", "90");
-                Log.i(TAG, "immersive mode: render scale " + env.get("RECOMP_RENDER_SCALE")
-                        + ", " + env.get("RECOMP_XR_HZ") + " Hz");
+            if (GpuDriver.isQuest()) {
+                boolean q2 = questLight();
+                int[] g = q2 ? new int[] {0, 4, 2, 72} : new int[] {1, 16, 3, 120};
+                int[] saved = graphicsSaved(new File(files, "xr_graphics.txt"));
+                if (saved != null)
+                    g = saved;
+                boolean imm = immersiveSaved(new File(files, "xr_view.txt")) && !q2;
+                String scale = imm ? "2" : g[2] == 2 ? "1" : g[2] == 3 ? "1.5" : "2";
+                env.putIfAbsent("RECOMP_RENDER_SCALE", scale);
+                env.putIfAbsent("RECOMP_XR_HZ", imm ? "90" : Integer.toString(g[3]));
+                env.putIfAbsent("RECOMP_GFX_ANISO", Integer.toString(g[1]));
+                if (g[0] != 0) {
+                    env.putIfAbsent("RECOMP_GFX_TEXTURE_UPSCALE", "nnedi3");
+                    env.putIfAbsent("RECOMP_GFX_TEXTURE_UPSCALE_SCALE", "2x");
+                }
+                if (!q2)
+                    env.putIfAbsent("RECOMP_DEBUG", "texpack_cap_mb=1024");
+                // What the menu shows: the settings this start runs with.
+                env.put("BO3_GFX", (env.containsKey("RECOMP_GFX_TEXTURE_UPSCALE") ? 1 : 0) + " "
+                        + env.get("RECOMP_GFX_ANISO") + " " + g[2] + " " + g[3] + " " + (q2 ? 2 : 3)
+                        + " " + (imm ? 1 : 0));
+                Log.i(TAG, android.os.Build.MODEL + (q2 ? " (light defaults)" : "") + ": render scale "
+                        + env.get("RECOMP_RENDER_SCALE") + ", " + env.get("RECOMP_XR_HZ") + " Hz, aniso "
+                        + env.get("RECOMP_GFX_ANISO") + ", upscale "
+                        + env.getOrDefault("RECOMP_GFX_TEXTURE_UPSCALE", "off") + (imm ? ", immersive" : ""));
             }
             for (java.util.Map.Entry<String, String> e : env.entrySet()) {
                 Os.setenv(e.getKey(), e.getValue(), true);
@@ -390,6 +413,32 @@ public class GameActivity extends SDLActivity {
     }
 
     /** NAME=value lines; '#' starts a comment line. */
+    /** A Quest 2 (or 1): the light graphics defaults. */
+    static boolean questLight() {
+        String m = android.os.Build.MODEL;
+        return m != null && (m.equals("Quest") || m.startsWith("Quest 2"));
+    }
+
+    /** The VR menu's GRAPHICS rows: "g1 upscale aniso scale_x2 hz", or null. */
+    private static int[] graphicsSaved(File f) {
+        if (!f.isFile())
+            return null;
+        try (java.io.BufferedReader r = new java.io.BufferedReader(new java.io.FileReader(f))) {
+            String l = r.readLine();
+            String[] t = l == null ? new String[0] : l.trim().split("\\s+");
+            if (t.length < 5 || !t[0].equals("g1"))
+                return null;
+            int u = Integer.parseInt(t[1]) != 0 ? 1 : 0, an = Integer.parseInt(t[2]),
+                    sc = Integer.parseInt(t[3]), hz = Integer.parseInt(t[4]);
+            an = an >= 16 ? 16 : an >= 8 ? 8 : 4;
+            sc = sc <= 2 ? 2 : sc >= 4 ? 4 : 3;
+            hz = hz <= 72 ? 72 : hz <= 90 ? 90 : 120;
+            return new int[] {u, an, sc, hz};
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     /** Whether the VR view was left in immersive mode: "t3"/"t4" lines, the 6th number after the tag. */
     private static boolean immersiveSaved(File f) {
         if (!f.isFile())
