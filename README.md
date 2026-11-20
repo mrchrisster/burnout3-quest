@@ -40,13 +40,15 @@ applies.
 
 ## Installing & Playing on Quest 3
 
-1. Build the APK ([Building](#building-for-meta-quest-android-arm64-v8a)) and sideload it with SideQuest, Meta Quest
-   Developer Hub or `adb`:
+1. Download the APK from [Releases](https://github.com/mrchrisster/burnout3-quest/releases) (or build it:
+   [Building](#building-for-meta-quest-android-arm64-v8a)) and sideload it with SideQuest, Meta Quest Developer Hub or
+   `adb`:
    ```sh
-   adb install -r out/takedawn-android-arm64.apk
+   adb install -r takedawn-quest-v0.2.0.apk
    ```
-   The app id is Takedawn's (`io.github.xenophobentx.takedawn`): a Takedawn APK signed with another key has to be
-   uninstalled first (its uninstall dialog offers to keep the data).
+   The app id is Takedawn's (`io.github.xenophobentx.takedawn`): a Takedawn APK signed with another key (one you
+   built yourself, or Takedawn's own) has to be uninstalled first. Its uninstall dialog offers to keep the data; to be
+   safe, copy `Android/data/io.github.xenophobentx.takedawn/files/takedawn/UDATA` (your saves) off the headset first.
 2. Copy your disc image (North America, NTSC-U) into the headset's **Download** folder, over USB (the Quest shows up
    as a drive) or with `adb`:
    ```sh
@@ -70,7 +72,7 @@ The library also lists **Takedawn: graphics driver**, the driver page (leave it 
 | Left / Right Grip (`LB` / `RB`) | White / Black |
 | Left / Right Stick Click (`L3` / `R3`) | Left / Right Thumb |
 | Left Menu Button | Start |
-| **`L3 + R3` (click both sticks)** | **VR menu**: resume, **mode** (screen / immersive beta: head-tracked races, the HUD on its own panel), level horizon, view (16:9 / 4:3 / full), background (dark room / mixed reality), **3D depth** (off / normal / deep / extra), recenter, reset screen, exit |
+| **`L3 + R3` (click both sticks)** | **VR menu**: resume, **mode** (screen / immersive beta: head-tracked races, the HUD on its own panel), level horizon, view (16:9 / 4:3 / full), background (dark room / mixed reality), **3D depth** (off / normal / deep / extra), **graphics** (textures, filtering, render scale, refresh: [below](#graphics)), recenter, reset screen, exit |
 | **`LB + RB + L3`** | **Toggle 3D on / off live** |
 | **Hold `LB + RB` (both grips)** | **Window mode: move the screen with your hands, pull hands apart / together for distance** |
 | `LB + RB` + Left Stick Up/Down | Screen distance |
@@ -82,15 +84,31 @@ The library also lists **Takedawn: graphics driver**, the driver page (leave it 
 Placement, background and 3D depth are remembered (`files/xr_view.txt`). Takedawn's own settings overlay opens with
 Back + Start as on every platform.
 
+### Graphics
+
+The VR menu's graphics rows, remembered in `files/xr_graphics.txt`. Refresh changes at once, the others at the next
+start (the menu says RESTART):
+
+| Row | Choices | Quest 3 / 3S / Pro | Quest 2 |
+| --- | --- | --- | --- |
+| TEXTURES | ORIGINAL / NNEDI3 2X (the world textures upscaled on the GPU) | NNEDI3 2X | ORIGINAL |
+| FILTERING | 4X / 8X / 16X anisotropic | 16X | 4X |
+| RENDER SCALE | 1.0 (640x480) / 1.5 (960x720) / 2.0 (1280x960) | 1.5 | 1.0 |
+| REFRESH | 72 / 90 / 120 Hz | 120 Hz | 72 Hz |
+
+The defaults are picked by headset. On a Quest 3 they hold 60 frames a second in races with 3D on (GPU 80-85 %).
+Immersive mode on a Quest 3 / 3S / Pro draws at 2.0 and runs at 90 Hz by itself: its one picture fills most of your
+view. **Quest 2: untested.** Its defaults are the light set and 3D NORMAL; if races drop below 60, try 3D off.
+RENDER SCALE 2.0 also smooths the car's thin chrome trim but costs about 10 frames a second in races on a Quest 3.
+
 ### `env.txt` (optional, in the app's `files` folder)
 
 | Line | Effect |
 | --- | --- |
-| `RECOMP_GFX_ANISO=16` | 16x anisotropic filtering |
-| `RECOMP_GFX_TEXTURE_UPSCALE=nnedi3` + `RECOMP_GFX_TEXTURE_UPSCALE_SCALE=2x` | the world textures upscaled 2x on the GPU (holds 60 fps) |
+| `RECOMP_GFX_ANISO=16`, `RECOMP_RENDER_SCALE=1.5`, `RECOMP_GFX_TEXTURE_UPSCALE=nnedi3` | the graphics rows' settings, over the menu's (`RECOMP_GFX_TEXTURE_UPSCALE=off` for none) |
 | `RECOMP_XR=0` | no OpenXR: Takedawn's flat Android window |
 | `RECOMP_XR_HZ=90` + `RECOMP_GFX_HIGH_REFRESH=1` | 90 Hz with frames blended between the game's 60 steps: 85-89 frames a second in races |
-| `RECOMP_XR_HZ=90` | the headset's refresh (default 120) |
+| `RECOMP_XR_HZ=90` | the headset's refresh, over the menu's |
 | `TAKEDAWN_AUTOLOAD=0` | the title's own boot screens (no auto-load of the profile) |
 
 A file pushed with `adb` into `Android/data/...` must be world-readable (`chmod 644`; folders `755`) for the app to
